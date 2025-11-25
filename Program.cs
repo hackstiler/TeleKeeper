@@ -194,7 +194,28 @@ class Program
                         await client.EditMessageText(chatId,
                                                      callBackQuery.Message.Id,
                                                      info,
-                                                     replyMarkup: KeyboardService.GetInlineKeyboardMarkup("Profile"));
+                                                     replyMarkup: KeyboardService.GetInlineKeyboardMarkup("Profile",phoneNumber));
+
+                        return;
+
+                    case string data when data.StartsWith("DeleteSession_"):
+
+                        string deletePhoneNumber = data.Split("_")[1];
+
+                        var tgClient = ActiveClients[deletePhoneNumber];
+
+                        ActiveClients.Remove(deletePhoneNumber);
+                        tgClient.Dispose();
+
+                        SessionManager.DeleteSession(deletePhoneNumber);
+
+                        await client.EditMessageText(chatId,
+                                                     callBackQuery.Message.Id,
+                                                     "🗑️Ваш аккаунт успешно удален!");
+
+                        await client.SendMessage(chatId,
+                                                 "Выберите интересующий вас аккаунт:",
+                                                 replyMarkup: KeyboardService.GetInlineKeyboardMarkup("AllSessions"));
 
                         return;
 

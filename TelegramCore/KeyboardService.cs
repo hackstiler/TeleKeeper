@@ -10,7 +10,7 @@ namespace TeleKeeper.TelegramCore
 {
     internal class KeyboardService
     {
-        public static InlineKeyboardMarkup GetInlineKeyboardMarkup(in string key)
+        public static InlineKeyboardMarkup GetInlineKeyboardMarkup(in string key, params object[] objects)
         {
             InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
 
@@ -60,12 +60,21 @@ namespace TeleKeeper.TelegramCore
 
                 case "Profile":
 
+                    string session = objects[0].ToString();
+
                     keyboard = new InlineKeyboardMarkup(new[]
                     {
+
                         new [] // 1 row
                         {
-                            InlineKeyboardButton.WithCallbackData("🔙Назад", "Menu"),
-            },
+
+                            InlineKeyboardButton.WithCallbackData("Удалить аккаунт", $"DeleteSession_{session}"),
+                        },
+                        new [] // 2 row
+                        {
+
+                            InlineKeyboardButton.WithCallbackData("🔙Назад", "GetAllSessions"),
+                        },
                     });
 
                     break;
