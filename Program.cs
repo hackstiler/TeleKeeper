@@ -8,10 +8,9 @@ namespace TeleKeeper;
 
 class Program
 {
-    static long[] AdminsIds = { 1111111111};
+    static long AdminId;
 
     static TelegramBot bot; //Telegram Bot
-
     static string Token;
 
     static string ApiId;
@@ -31,6 +30,7 @@ class Program
         .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
         .Build();
 
+        AdminId = long.Parse(config["ADMIN_ID"]);
         Token = config["BOT_TOKEN"];
         ApiHash = config["APP_HASH"];
         ApiId = config["APP_ID"];
@@ -59,7 +59,7 @@ class Program
 
                 Console.WriteLine($"[{DateTime.Now}] {chatId}: {message?.Text}");
 
-                if (!AdminsIds.Contains(chatId))
+                if (AdminId != chatId)
                     return;
 
                 // TELEGRAM CLIENT ЖДЁТ КОД
@@ -153,7 +153,7 @@ class Program
 
                 Console.WriteLine($"[{DateTime.Now}] {chatId}: {callBackQuery.Data}");
 
-                if (!AdminsIds.Contains(chatId))
+                if (AdminId != chatId)
                     return;
 
                 switch (callBackQuery.Data)
@@ -185,7 +185,20 @@ class Program
 
                         return;
 
-                    
+                    case string data when data.StartsWith("Session_"):
+
+                        string phoneNumber = data.Split("_")[1];
+
+                        var info = await ActiveClients[phoneNumber].GetAccountInfoFormatted();
+
+                        await client.EditMessageText(chatId,
+                                                     callBackQuery.Message.Id,
+                                                     info,
+                                                     replyMarkup: KeyboardService.GetInlineKeyboardMarkup("Profile"));
+
+                        return;
+
+
                 }
 
                 return;
@@ -206,17 +219,7 @@ class Program
 
     private static async void OnTryAutorization(string sessionNumber, string msg)
     {
-        foreach (var adminId in AdminsIds)
-        {
-            try
-            {
-                await bot.Client.SendMessage(adminId, $"⚠️Попытка входа на {sessionNumber}:");
-                await bot.Client.SendMessage(adminId, msg);
-            }
-            catch (Exception ex)
-            {
-
-            }
-        }
+        await bot.Client.SendMessage(AdminId, $"⚠️Попытка входа на {sessionNumber}:");
+        await bot.Client.SendMessage(AdminId, msg);
     }
 }

@@ -131,10 +131,53 @@ namespace TeleKeeper.TelegramCore
             }
         }
 
+        public async Task<string> GetAccountInfoFormatted()
+        {
+            // Получаем информацию о текущем пользователе
+            var me = _client.User;
+
+            // Получаем имя и фамилию
+            string fullName = $"{me.first_name} {me.last_name}".Trim();
+
+            // Получаем тег (username)
+            string username = me.username ?? "Не указан";
+
+            // Дата последнего входа
+            string lastLogin = "Неизвестно";
+            if (me.status is UserStatusOffline offline)
+            {
+                DateTime lastSeen = offline.was_online;
+                lastLogin = lastSeen.AddHours(3).ToString("dd.MM.yyyy | HH:mm:ss");
+            }
+            else if (me.status is UserStatusOnline)
+            {
+                lastLogin = "В сети";
+            }
+
+            // Статус аккаунта
+            string accountStatus = "Активен";
+            if (me.flags.HasFlag(User.Flags.deleted))
+            {
+                accountStatus = "Заблокирован";
+            }
+            else if (me.status is UserStatusOffline)
+            {
+                accountStatus = "Оффлайн";
+            }
+            // Формируем строку с информацией
+            string accountInfo = $"Имя: {fullName}\n" +
+                                 $"Тег: @{username}\n" +
+                                 $"Статус аккаунта: {accountStatus}\n" +
+                                 $"Дата последнего появления в сети: {lastLogin} (МСК)";
+
+            return accountInfo;
+        }
+
         public void Dispose()
         {
             _client?.Dispose();
             _client = null;
         }
+
     }
 }
