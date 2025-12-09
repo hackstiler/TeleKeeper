@@ -9,12 +9,14 @@ namespace TeleKeeper.Sessions
     internal class SessionManager
     {
         public static List<string> ActiveSessions = new List<string>();
-        private static string DirectoryName = "Sessions";
+        private static string DirectoryName = AppContext.BaseDirectory + "Sessions";
         private static string ConfigPath = $"{DirectoryName}/SavedSessions.txt";
         
 
         static SessionManager()
         {
+            Console.WriteLine(ConfigPath);
+
             if (!File.Exists(ConfigPath))
             {
                 Directory.CreateDirectory(DirectoryName);
